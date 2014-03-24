@@ -66,8 +66,15 @@
     details = if !ids.empty? then
       spent = @issue.spent_hours_by_activity
       spent.default = 0
-      activities = TimeEntryActivity.find(ids).map {|a| a.name.downcase + ': ' + l_hours(spent[a.id])}
-      "#{activities.join(', ').capitalize} (#{l(:label_total_spent_time)}: #{link})".html_safe
+      activities = TimeEntryActivity.find(ids).map do |a|
+        if ids.length > 1
+          a.name.mb_chars.downcase + ': ' + l_hours(spent[a.id])
+        else
+          '<span title="%s">%s</span>' % [a.name, l_hours(spent[a.id])]
+        end
+      end.join(', ')
+      activities = activities.mb_chars.capitalize if ids.length > 1
+      "#{activities} (#{l(:label_total_spent_time)}: #{link})".html_safe
     else
       link
     end
